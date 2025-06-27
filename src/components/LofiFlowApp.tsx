@@ -37,7 +37,7 @@ export function LofiFlowApp() {
   const [currentPlaylist, setCurrentPlaylist] = useState(Object.keys(playlists)[0])
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const synthRef = useRef<Tone.Synth | null>(null)
+  const synthRef = useRef<Tone.PolySynth | null>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const wordCount = useMemo(() => {
@@ -54,10 +54,12 @@ export function LofiFlowApp() {
   }, [isTyping])
   
   useEffect(() => {
-    synthRef.current = new Tone.Synth({
+    // Use PolySynth to avoid errors with rapid key presses
+    synthRef.current = new Tone.PolySynth(Tone.Synth).toDestination()
+    synthRef.current.set({
       oscillator: { type: 'sine' },
       envelope: { attack: 0.001, decay: 0.1, sustain: 0.1, release: 0.1 },
-    }).toDestination()
+    })
     synthRef.current.volume.value = -12
 
     return () => {
@@ -82,8 +84,12 @@ export function LofiFlowApp() {
   }, [currentPlaylist, isPlaying])
 
 
-  const playSound = () => {
+  const playSound = async () => {
     if (soundEnabled && synthRef.current) {
+      // Ensure audio context is running
+      if (Tone.context.state !== 'running') {
+        await Tone.start()
+      }
       try {
          synthRef.current.triggerAttackRelease('C5', '32n')
       } catch (error) {
@@ -107,7 +113,11 @@ export function LofiFlowApp() {
     setGoal(isNaN(newGoal) || newGoal < 0 ? 0 : newGoal)
   }
 
-  const togglePlayPause = () => {
+  const togglePlayPause = async () => {
+    // Start the audio context on user interaction
+    if (Tone.context.state !== 'running') {
+      await Tone.start()
+    }
     if (!audioRef.current) return
     if (isPlaying) {
       audioRef.current.pause()
