@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Slider } from "@/components/ui/slider"
-import { Music, Play, Pause, Settings, Download, Volume2, VolumeX, BookText, Wind } from 'lucide-react'
+import { Music, Play, Pause, Settings, Download, Volume2, VolumeX, BookText, Filter } from 'lucide-react'
 
 type Playlist = {
   name: string
@@ -37,7 +37,7 @@ export function LofiFlowApp() {
   const [currentPlaylist, setCurrentPlaylist] = useState(Object.keys(playlists)[0])
 
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const synthRef = useRef<Tone.PolySynth | null>(null)
+  const synthRef = useRef<Tone.PluckSynth | null>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const wordCount = useMemo(() => {
@@ -54,14 +54,8 @@ export function LofiFlowApp() {
   }, [isTyping])
   
   useEffect(() => {
-    // Use PolySynth to avoid errors with rapid key presses
-    synthRef.current = new Tone.PolySynth(Tone.Synth).toDestination()
-    synthRef.current.set({
-      oscillator: { type: 'sine' },
-      envelope: { attack: 0.001, decay: 0.1, sustain: 0.1, release: 0.1 },
-    })
-    synthRef.current.volume.value = -12
-
+    synthRef.current = new Tone.PluckSynth().toDestination()
+    synthRef.current.volume.value = -6;
     return () => {
       synthRef.current?.dispose()
     }
@@ -86,15 +80,11 @@ export function LofiFlowApp() {
 
   const playSound = async () => {
     if (soundEnabled && synthRef.current) {
-      // Ensure audio context is running
       if (Tone.context.state !== 'running') {
         await Tone.start()
       }
-      try {
-         synthRef.current.triggerAttackRelease('C5', '32n')
-      } catch (error) {
-        console.error("Failed to play sound", error)
-      }
+      // PluckSynth only needs triggerAttack, it has a natural decay.
+      synthRef.current.triggerAttack('C4')
     }
   }
 
@@ -148,7 +138,7 @@ export function LofiFlowApp() {
           <CardHeader className="p-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/20 rounded-lg"><Wind className="w-6 h-6 text-primary" /></div>
+                <div className="p-2 bg-primary/20 rounded-lg"><Filter className="w-6 h-6 text-primary" /></div>
                 <h1 className="text-2xl font-bold text-foreground">LofiFlow</h1>
               </div>
               
