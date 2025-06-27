@@ -1,9 +1,9 @@
-import { LofiWriterApp } from "@/components/LofiFlowApp";
+import { LofiFlowApp } from "@/components/LofiFlowApp";
 
 export default function Home() {
   return (
     <main>
-      <LofiWriterApp />
+      <LofiFlowApp />
     </main>
   );
 }

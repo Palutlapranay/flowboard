@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Slider } from "@/components/ui/slider"
-import { Music, Play, Pause, Settings, Download, BookText, PlayCircle, PauseCircle } from 'lucide-react'
+import { Music, Play, Pause, Settings, Download, Waves, PlayCircle, PauseCircle } from 'lucide-react'
 
 type Playlist = {
   name: string
@@ -21,12 +21,12 @@ type Playlist = {
 }
 
 const playlists: Record<string, Playlist> = {
-  'lofi-chill': { name: 'Lofi Chill', url: 'https://www.chosic.com/wp-content/uploads/2022/01/purrple-cat-dreaming-of-you.mp3' },
-  'ambient-focus': { name: 'Ambient Focus', url: 'https://www.chosic.com/wp-content/uploads/2024/03/purrple-cat-through-the-looking-glass.mp3' },
-  'late-night': { name: 'Late Night', url: 'https://www.chosic.com/wp-content/uploads/2021/07/purrple-cat-battle-of-the-heroes.mp3' },
+  'lofi-chill': { name: 'Lofi Chill', url: 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/itswatr/24k/itswatr_-_01_-_Sunday_Morning.mp3' },
+  'ambient-focus': { name: 'Ambient Focus', url: 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Ghostrifter_Official/An_Unusual_Place/Ghostrifter_Official_-_01_-_Still_Awake.mp3' },
+  'late-night': { name: 'Late Night', url: 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Ghostrifter_Official/An_Unusual_Place/Ghostrifter_Official_-_02_-_City_Lights.mp3' },
 }
 
-export function LofiWriterApp() {
+export function LofiFlowApp() {
   const [text, setText] = useState('')
   const [goal, setGoal] = useState(500)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -55,14 +55,14 @@ export function LofiWriterApp() {
   
   // Auto-save to localStorage
   useEffect(() => {
-    const savedText = localStorage.getItem('lofiwriter-text');
+    const savedText = localStorage.getItem('lofiflow-text');
     if (savedText) {
       setText(savedText);
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('lofiwriter-text', text)
+    localStorage.setItem('lofiflow-text', text)
   }, [text])
 
   // Pomodoro Timer Logic
@@ -151,7 +151,7 @@ export function LofiWriterApp() {
       if (Tone.context.state !== 'running') {
         await Tone.start()
       }
-      synthRef.current.triggerAttackRelease('C4', '8n')
+      synthRef.current.triggerAttackRelease('C4', '8n', Tone.now())
     }
   }
 
@@ -188,7 +188,7 @@ export function LofiWriterApp() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `lofiwriter-export.${format}`
+    a.download = `lofiflow-export.${format}`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -204,8 +204,8 @@ export function LofiWriterApp() {
           <CardHeader className="p-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/20 rounded-lg"><BookText className="w-6 h-6 text-primary" /></div>
-                <h1 className="text-2xl font-bold text-foreground">LofiWriter 2.0</h1>
+                <div className="p-2 bg-primary/20 rounded-lg"><Waves className="w-6 h-6 text-primary" /></div>
+                <h1 className="text-2xl font-bold text-foreground">LofiFlow</h1>
               </div>
               
               <div className="flex flex-wrap items-center gap-4 sm:gap-6">
