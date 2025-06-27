@@ -1,3 +1,4 @@
+
 "use client"
 
 import { useState, useEffect, useRef, useMemo } from 'react'
@@ -96,18 +97,29 @@ export function LofiFlowApp() {
     const synth = new Tone.Synth().toDestination()
     synth.triggerAttackRelease('C5', '8n', Tone.now())
   }
+  
+  const playButtonClickSound = async (note: string) => {
+    if (soundEnabled && synthRef.current) {
+      if (Tone.context.state !== 'running') {
+        await Tone.start();
+      }
+      synthRef.current.triggerAttackRelease(note, '16n', Tone.now());
+    }
+  };
 
   const handlePomodoroToggle = () => {
     if (pomodoroMode === 'idle') {
       setPomodoroMode('work');
     }
     setIsTimerRunning(!isTimerRunning)
+    playButtonClickSound('E4');
   }
 
   const resetPomodoro = () => {
     setIsTimerRunning(false)
     setPomodoroMode('idle')
     setTimer(25 * 60)
+    playButtonClickSound('D4');
   }
 
   const formatTime = (seconds: number) => {
@@ -182,6 +194,7 @@ export function LofiFlowApp() {
       audioRef.current.play().catch(e => console.error("Audio play failed:", e))
     }
     setIsPlaying(!isPlaying)
+    await playButtonClickSound('G4');
   }
 
   const exportToFile = (format: 'txt' | 'md') => {
@@ -194,7 +207,22 @@ export function LofiFlowApp() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
+    playButtonClickSound('B4');
   }
+
+  const handlePlaylistChange = (value: string) => {
+    setCurrentPlaylist(value);
+    playButtonClickSound('F4');
+  };
+
+  const handleSoundEnableChange = (checked: boolean) => {
+    setSoundEnabled(checked);
+    playButtonClickSound(checked ? 'C5' : 'B3');
+  };
+
+  const handleVolumeChange = (newVolume: number[]) => {
+    setVolume(newVolume[0]);
+  };
 
   return (
     <div className="relative flex flex-col min-h-screen w-full p-4 sm:p-6 lg:p-8 font-body gap-6">
@@ -223,7 +251,7 @@ export function LofiFlowApp() {
 
                 {/* Music Player */}
                 <div className="flex items-center gap-2">
-                  <Select value={currentPlaylist} onValueChange={setCurrentPlaylist}>
+                  <Select value={currentPlaylist} onValueChange={handlePlaylistChange}>
                     <SelectTrigger className="w-[150px]">
                       <SelectValue placeholder="Select Playlist" />
                     </SelectTrigger>
@@ -252,18 +280,18 @@ export function LofiFlowApp() {
                 <div className="flex items-center gap-2">
                    <Dialog>
                     <DialogTrigger asChild>
-                      <Button variant="ghost" size="icon"><Settings className="h-5 w-5" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => playButtonClickSound('A4')}><Settings className="h-5 w-5" /></Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader><DialogTitle>Settings</DialogTitle></DialogHeader>
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <Label htmlFor="sound-switch">Typewriter Sound</Label>
-                          <Switch id="sound-switch" checked={soundEnabled} onCheckedChange={setSoundEnabled} />
+                          <Switch id="sound-switch" checked={soundEnabled} onCheckedChange={handleSoundEnableChange} />
                         </div>
                         <div className="space-y-2">
                            <Label>Music Volume</Label>
-                           <Slider defaultValue={[volume]} max={100} step={1} onValueChange={([v]) => setVolume(v)} />
+                           <Slider defaultValue={[volume]} max={100} step={1} onValueChange={handleVolumeChange} onValueCommit={() => playButtonClickSound('E5')} />
                         </div>
                         <div className="flex items-center justify-between pt-4 mt-4 border-t">
                             <Label>Pomodoro Timer</Label>
@@ -275,7 +303,7 @@ export function LofiFlowApp() {
                   
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon"><Download className="h-5 w-5" /></Button>
+                      <Button variant="ghost" size="icon" onClick={() => playButtonClickSound('A4')}><Download className="h-5 w-5" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                       <DropdownMenuItem onClick={() => exportToFile('txt')}>Export as .txt</DropdownMenuItem>
