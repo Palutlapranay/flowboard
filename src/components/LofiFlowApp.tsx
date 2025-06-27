@@ -9,12 +9,11 @@ import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Slider } from "@/components/ui/slider"
-import { Music, Play, Pause, Settings, Download, Volume2, VolumeX, BookText, Filter } from 'lucide-react'
+import { Music, Play, Pause, Settings, Download, BookText, PlayCircle, PauseCircle } from 'lucide-react'
 
 type Playlist = {
   name: string
@@ -27,7 +26,7 @@ const playlists: Record<string, Playlist> = {
   'late-night': { name: 'Late Night', url: 'https://www.chosic.com/wp-content/uploads/2021/07/purrple-cat-battle-of-the-heroes.mp3' },
 }
 
-export function LofiFlowApp() {
+export function LofiWriterApp() {
   const [text, setText] = useState('')
   const [goal, setGoal] = useState(500)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -36,8 +35,13 @@ export function LofiFlowApp() {
   const [volume, setVolume] = useState(50)
   const [currentPlaylist, setCurrentPlaylist] = useState(Object.keys(playlists)[0])
 
+  // Pomodoro State
+  const [pomodoroMode, setPomodoroMode] = useState<'work' | 'break' | 'idle'>('idle')
+  const [timer, setTimer] = useState(25 * 60)
+  const [isTimerRunning, setIsTimerRunning] = useState(false)
+
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const synthRef = useRef<Tone.PluckSynth | null>(null)
+  const synthRef = useRef<Tone.PolySynth | null>(null)
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const wordCount = useMemo(() => {
@@ -48,14 +52,78 @@ export function LofiFlowApp() {
     if (goal === 0) return 0
     return Math.min((wordCount / goal) * 100, 100)
   }, [wordCount, goal])
+  
+  // Auto-save to localStorage
+  useEffect(() => {
+    const savedText = localStorage.getItem('lofiwriter-text');
+    if (savedText) {
+      setText(savedText);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('lofiwriter-text', text)
+  }, [text])
+
+  // Pomodoro Timer Logic
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null
+    if (isTimerRunning && timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prevTimer) => prevTimer - 1)
+      }, 1000)
+    } else if (timer <= 0) {
+      playNotificationSound()
+      if (pomodoroMode === 'work') {
+        setPomodoroMode('break')
+        setTimer(5 * 60)
+        setIsTimerRunning(true) 
+      } else {
+        setPomodoroMode('work')
+        setTimer(25 * 60)
+        setIsTimerRunning(false) // Pause after break
+      }
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [isTimerRunning, timer, pomodoroMode])
+  
+  const playNotificationSound = async () => {
+    if (Tone.context.state !== 'running') {
+      await Tone.start()
+    }
+    const synth = new Tone.Synth().toDestination()
+    synth.triggerAttackRelease('C5', '8n', Tone.now())
+  }
+
+  const handlePomodoroToggle = () => {
+    if (pomodoroMode === 'idle') {
+      setPomodoroMode('work');
+    }
+    setIsTimerRunning(!isTimerRunning)
+  }
+
+  const resetPomodoro = () => {
+    setIsTimerRunning(false)
+    setPomodoroMode('idle')
+    setTimer(25 * 60)
+  }
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
+  }
+
 
   useEffect(() => {
     document.body.classList.toggle('is-typing', isTyping)
   }, [isTyping])
   
   useEffect(() => {
-    synthRef.current = new Tone.PluckSynth().toDestination()
-    synthRef.current.volume.value = -6;
+    synthRef.current = new Tone.PolySynth(Tone.Synth).toDestination()
+    synthRef.current.volume.value = -12
     return () => {
       synthRef.current?.dispose()
     }
@@ -83,8 +151,7 @@ export function LofiFlowApp() {
       if (Tone.context.state !== 'running') {
         await Tone.start()
       }
-      // PluckSynth only needs triggerAttack, it has a natural decay.
-      synthRef.current.triggerAttack('C4')
+      synthRef.current.triggerAttackRelease('C4', '8n')
     }
   }
 
@@ -104,7 +171,6 @@ export function LofiFlowApp() {
   }
 
   const togglePlayPause = async () => {
-    // Start the audio context on user interaction
     if (Tone.context.state !== 'running') {
       await Tone.start()
     }
@@ -122,7 +188,7 @@ export function LofiFlowApp() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `lofiflow-export.${format}`
+    a.download = `lofiwriter-export.${format}`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -134,15 +200,26 @@ export function LofiFlowApp() {
       <audio ref={audioRef} src={playlists[currentPlaylist].url} loop onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
       
       <header className="sticky top-4 sm:top-6 z-20">
-        <Card className="bg-card/75 backdrop-blur-lg shadow-lg">
+        <Card className="bg-white/10 backdrop-blur-lg shadow-lg border-white/20">
           <CardHeader className="p-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/20 rounded-lg"><Filter className="w-6 h-6 text-primary" /></div>
-                <h1 className="text-2xl font-bold text-foreground">LofiFlow</h1>
+                <div className="p-2 bg-primary/20 rounded-lg"><BookText className="w-6 h-6 text-primary" /></div>
+                <h1 className="text-2xl font-bold text-foreground">LofiWriter 2.0</h1>
               </div>
               
               <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+                {/* Pomodoro Timer */}
+                <div className="flex items-center gap-2 p-2 rounded-lg bg-black/10">
+                  <Button variant="ghost" size="icon" onClick={handlePomodoroToggle}>
+                    {isTimerRunning ? <PauseCircle className="h-6 w-6" /> : <PlayCircle className="h-6 w-6" />}
+                  </Button>
+                  <div className="text-center">
+                    <div className="font-mono text-xl tracking-wider">{formatTime(timer)}</div>
+                    <div className="text-xs uppercase tracking-widest text-muted-foreground">{pomodoroMode}</div>
+                  </div>
+                </div>
+
                 {/* Music Player */}
                 <div className="flex items-center gap-2">
                   <Select value={currentPlaylist} onValueChange={setCurrentPlaylist}>
@@ -187,6 +264,10 @@ export function LofiFlowApp() {
                            <Label>Music Volume</Label>
                            <Slider defaultValue={[volume]} max={100} step={1} onValueChange={([v]) => setVolume(v)} />
                         </div>
+                        <div className="flex items-center justify-between pt-4 mt-4 border-t">
+                            <Label>Pomodoro Timer</Label>
+                            <Button variant="outline" size="sm" onClick={resetPomodoro}>Reset</Button>
+                        </div>
                       </div>
                     </DialogContent>
                   </Dialog>
@@ -209,13 +290,13 @@ export function LofiFlowApp() {
       </header>
 
       <main className="flex-grow">
-        <Card className="h-[calc(100vh-11rem)] sm:h-[calc(100vh-12rem)] shadow-lg">
-          <CardContent className="p-1 h-full">
+        <Card className="h-[calc(100vh-11rem)] sm:h-[calc(100vh-12rem)] bg-transparent border-none shadow-none">
+          <CardContent className="p-0 h-full">
             <Textarea
               value={text}
               onChange={handleTextChange}
               placeholder="Start writing..."
-              className="w-full h-full resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-lg leading-relaxed p-6"
+              className="w-full h-full resize-none border-0 focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent text-lg leading-relaxed p-6 text-foreground/90 placeholder:text-foreground/50"
             />
           </CardContent>
         </Card>
