@@ -21,9 +21,9 @@ type Playlist = {
 }
 
 const playlists: Record<string, Playlist> = {
-  'lofi-chill': { name: 'Lofi Chill', url: 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/itswatr/24k/itswatr_-_01_-_Sunday_Morning.mp3' },
-  'ambient-focus': { name: 'Ambient Focus', url: 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Ghostrifter_Official/An_Unusual_Place/Ghostrifter_Official_-_01_-_Still_Awake.mp3' },
-  'late-night': { name: 'Late Night', url: 'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/ccCommunity/Ghostrifter_Official/An_Unusual_Place/Ghostrifter_Official_-_02_-_City_Lights.mp3' },
+  'lofi-chill': { name: 'Lofi Chill', url: 'https://archive.org/download/lofi_202108/lofi.mp3' },
+  'ambient-focus': { name: 'Ambient Focus', url: 'https://archive.org/download/ambient-classical-guitar/track01.mp3' },
+  'late-night': { name: 'Late Night', url: 'https://archive.org/download/Lofi-Beat-1/Lofi-Beat-1.mp3' },
 }
 
 export function LofiFlowApp() {
@@ -143,7 +143,7 @@ export function LofiFlowApp() {
             audioRef.current.play().catch(e => console.error("Audio play failed:", e))
         }
     }
-  }, [currentPlaylist, isPlaying])
+  }, [currentPlaylist])
 
 
   const playSound = async () => {
@@ -178,6 +178,7 @@ export function LofiFlowApp() {
     if (isPlaying) {
       audioRef.current.pause()
     } else {
+      audioRef.current.src = playlists[currentPlaylist].url
       audioRef.current.play().catch(e => console.error("Audio play failed:", e))
     }
     setIsPlaying(!isPlaying)
