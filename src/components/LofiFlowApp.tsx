@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Slider } from "@/components/ui/slider"
-import { Music, Play, Pause, Settings, Download, PlayCircle, PauseCircle } from 'lucide-react'
+import { Music, Play, Pause, Settings, Download, PlayCircle, PauseCircle, Leaf } from 'lucide-react'
 
 type Playlist = {
   name: string
@@ -155,7 +155,7 @@ export function LofiFlowApp() {
             audioRef.current.play().catch(e => console.error("Audio play failed:", e))
         }
     }
-  }, [currentPlaylist])
+  }, [currentPlaylist, isPlaying])
 
 
   const playSound = async () => {
@@ -232,42 +232,15 @@ export function LofiFlowApp() {
 
   return (
     <div className="relative flex flex-col min-h-screen w-full p-4 sm:p-6 lg:p-8 font-body gap-6">
-      <audio ref={audioRef} src={playlists[currentPlaylist].url} loop onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
+      <audio ref={audioRef} loop onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
       
       <header className="sticky top-4 sm:top-6 z-20">
         <Card className="bg-white/10 backdrop-blur-lg shadow-lg border-white/20">
           <CardHeader className="p-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/20 rounded-lg">
-                  <svg
-                    className="w-6 h-6 text-primary"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M3 12C3 12 5 15 9 15C13 15 15 12 19 12C23 12 21 9 21 9"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M3 15C3 15 5 18 9 18C13 18 15 15 19 15C23 15 21 12 21 12"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M3 9C3 9 5 12 9 12C13 12 15 9 19 9C23 9 21 6 21 6"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
+                <div className="p-2 bg-accent rounded-lg">
+                  <Leaf className="w-6 h-6 text-accent-foreground" />
                 </div>
                 <h1 className="text-2xl font-bold text-foreground">LofiFlow</h1>
               </div>
