@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Slider } from "@/components/ui/slider"
-import { Music, Play, Pause, Settings, Download, Waves, PlayCircle, PauseCircle } from 'lucide-react'
+import { Music, Play, Pause, Settings, Download, PlayCircle, PauseCircle } from 'lucide-react'
 
 type Playlist = {
   name: string
@@ -103,7 +103,7 @@ export function LofiFlowApp() {
       if (Tone.context.state !== 'running') {
         await Tone.start();
       }
-      synthRef.current.triggerAttackRelease(note, '16n', Tone.now());
+      synthRef.current.triggerAttackRelease(note, '16n');
     }
   };
 
@@ -163,7 +163,7 @@ export function LofiFlowApp() {
       if (Tone.context.state !== 'running') {
         await Tone.start()
       }
-      synthRef.current.triggerAttackRelease('C4', '8n', Tone.now())
+      synthRef.current.triggerAttackRelease('C4', '8n')
     }
   }
 
@@ -224,6 +224,12 @@ export function LofiFlowApp() {
     setVolume(newVolume[0]);
   };
 
+  const handleSettingsClick = () => playButtonClickSound('A4');
+  const handleExportClick = () => playButtonClickSound('A4');
+  const handleVolumeCommit = () => playButtonClickSound('E5');
+  const handleExportTxt = () => exportToFile('txt');
+  const handleExportMd = () => exportToFile('md');
+
   return (
     <div className="relative flex flex-col min-h-screen w-full p-4 sm:p-6 lg:p-8 font-body gap-6">
       <audio ref={audioRef} src={playlists[currentPlaylist].url} loop onPlay={() => setIsPlaying(true)} onPause={() => setIsPlaying(false)} />
@@ -233,7 +239,36 @@ export function LofiFlowApp() {
           <CardHeader className="p-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/20 rounded-lg"><Waves className="w-6 h-6 text-primary" /></div>
+                <div className="p-2 bg-primary/20 rounded-lg">
+                  <svg
+                    className="w-6 h-6 text-primary"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M3 12C3 12 5 15 9 15C13 15 15 12 19 12C23 12 21 9 21 9"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M3 15C3 15 5 18 9 18C13 18 15 15 19 15C23 15 21 12 21 12"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M3 9C3 9 5 12 9 12C13 12 15 9 19 9C23 9 21 6 21 6"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
                 <h1 className="text-2xl font-bold text-foreground">LofiFlow</h1>
               </div>
               
@@ -280,7 +315,7 @@ export function LofiFlowApp() {
                 <div className="flex items-center gap-2">
                    <Dialog>
                     <DialogTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={() => playButtonClickSound('A4')}><Settings className="h-5 w-5" /></Button>
+                      <Button variant="ghost" size="icon" onClick={handleSettingsClick}><Settings className="h-5 w-5" /></Button>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader><DialogTitle>Settings</DialogTitle></DialogHeader>
@@ -291,7 +326,7 @@ export function LofiFlowApp() {
                         </div>
                         <div className="space-y-2">
                            <Label>Music Volume</Label>
-                           <Slider defaultValue={[volume]} max={100} step={1} onValueChange={handleVolumeChange} onValueCommit={() => playButtonClickSound('E5')} />
+                           <Slider defaultValue={[volume]} max={100} step={1} onValueChange={handleVolumeChange} onValueCommit={handleVolumeCommit} />
                         </div>
                         <div className="flex items-center justify-between pt-4 mt-4 border-t">
                             <Label>Pomodoro Timer</Label>
@@ -303,11 +338,11 @@ export function LofiFlowApp() {
                   
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" onClick={() => playButtonClickSound('A4')}><Download className="h-5 w-5" /></Button>
+                      <Button variant="ghost" size="icon" onClick={handleExportClick}><Download className="h-5 w-5" /></Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                      <DropdownMenuItem onClick={() => exportToFile('txt')}>Export as .txt</DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => exportToFile('md')}>Export as .md</DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportTxt}>Export as .txt</DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportMd}>Export as .md</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
