@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Slider } from "@/components/ui/slider"
-import { Music, Play, Pause, Settings, Download, PlayCircle, PauseCircle, Leaf } from 'lucide-react'
+import { Music, Play, Pause, Settings, Download, PlayCircle, PauseCircle } from 'lucide-react'
 
 type Playlist = {
   name: string
@@ -240,7 +240,16 @@ export function LofiFlowApp() {
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-accent rounded-lg">
-                  <Leaf className="w-6 h-6 text-accent-foreground" />
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="w-6 h-6 text-accent-foreground"
+                  >
+                    <path d="M17 8C8 10 5.5 16.5 5.5 16.5c0-2.5 2-4.5 2-4.5C5.5 10 2 12.5 2 17c0 2.5 2.5 4.5 5.5 4.5s5.5-2 5.5-4.5c0-2-1-3.5-2.5-4.5c2.5-2.5 3.5-3 6-4.5c2-1 3-3.5 3-3.5s-2 1.5-3.5 2.5z" />
+                  </svg>
                 </div>
                 <h1 className="text-2xl font-bold text-foreground">LofiFlow</h1>
               </div>
